@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="generator" content="Hugo 0.18.1" />
+    <link rel="shortcut icon" href="/images/favicon.ico">
+    <link href="https://ghstahl.github.io/index.xml" rel="alternate" type="application/rss+xml" title="Software Architecture And Development from the Trenches" />
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+    
+    <script src="https://apis.google.com/js/platform.js" async defer>{lang: 'ja'}</script>
+    
+    <link rel="stylesheet" href="https://yandex.st/highlightjs/8.0/styles/default.min.css">
+    <script src="https://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <title>Cachebusting technique for asp.net core | Software Architecture And Development from the Trenches</title>
+  </head>
+  <body>
+    <div id="wrap">
+      
+      <header class="site-header">
+        <div class="site-header-left">
+          <a class="site-header-title" href="https://ghstahl.github.io/">Software Architecture And Development from the Trenches</a>
+        </div>
+      </header>
+      <div class="container">
+        <div id="main">
+
+<div class="article">
+  <header>
+    <div class="article-header">
+      <h1>Cachebusting technique for asp.net core</h1>
+      <div class="article-meta">
+        <span class="posttime">2017/01/14</span>
+        
+
+      </div>
+    </div>
+    
+<div id="share-buttons">
+  <ul>
+    
+    <li>
+      <a href="https://twitter.com/share" class="twitter-share-button">Tweet</a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+    </li>
+    
+    
+    
+    
+    
+    <li>
+      <a data-pocket-label="pocket" data-pocket-count="horizontal" class="pocket-btn" data-lang="en"></a>
+      <script type="text/javascript">!function(d,i){if(!d.getElementById(i)){var j=d.createElement("script");j.id=i;j.src="https://widgets.getpocket.com/v1/j/btn.js?v=1";var w=d.getElementById(i);d.body.appendChild(j);}}(document,"pocket-btn-js");</script>
+    </li>
+    
+  </ul>
+</div>
+
+
+  </header>
+  <div class="content">
+    
+
+<h2 id="goal">Goal</h2>
+
+<p>The goal of this exercise is to create a versioned route, as opposed to adding a query paramater to the end of the route.
+It isn&rsquo;t simple browser cache busting we are after, but in later posts this technique will be used to feed a CDN.</p>
+
+<p>The stock asp.net core script tag helper looks like this;</p>
+
+<pre><code>&lt;script src=&quot;~/lib/jquery/dist/jquery.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+
+<p>Our asp.net core script tag helper will look like this;</p>
+
+<pre><code> &lt;pingo-script-cbv src=&quot;~/lib/jquery/dist/jquery.js&quot;&gt;&lt;/pingo-script-cbv&gt;
+</code></pre>
+
+<p>The final outcome in HTML will look like this;</p>
+
+<pre><code>&lt;script src=&quot;/cb-v/1.0.0.395078882/lib/jquery/dist/jquery.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+
+<p>There are a couple things we need to do.</p>
+
+<ol>
+<li>Create our TagHelper</li>
+<li>Make a static FileProvider that serves the correct file.</li>
+<li>Hook it up.</li>
+</ol>
+
+<h3 id="the-taghelper">The TagHelper</h3>
+
+<pre><code>public class PingoScriptCbvTagHelper : TagHelper
+{
+    private static string _version;
+
+    public static string Version
+    {
+        private get
+        {
+            if (string.IsNullOrEmpty(_version))
+            {
+                _version = &quot;not-set&quot;;
+            }
+            return _version;
+
+        }
+        set { _version = value; }
+    }
+
+    private static string _cbcPrepend;
+    private static string CBVPrepend
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_cbcPrepend))
+            {
+                _cbcPrepend = string.Format(&quot;/cb-v/{0}/&quot;, Version);
+            }
+            return _cbcPrepend;
+        }
+    }
+
+    public override async Task ProcessAsync(TagHelperContext context,
+                                            TagHelperOutput output)
+    {
+        output.TagName = &quot;script&quot;;
+        var src = output.Attributes[&quot;src&quot;];
+        var finalSrcValue = src.Value.ToString().Replace(&quot;~/&quot;, CBVPrepend);
+        output.Attributes.SetAttribute(&quot;src&quot;, finalSrcValue);
+    }
+}
+</code></pre>
+
+<h3 id="the-fileprovider">The FileProvider</h3>
+
+<p>Our FileProvider is pretty simple.  It uses asp.net core&rsquo;s PhysicalFileProvider to do the heavy lifting, and only bothers to modify what gets sent as a subpath to the GetFileInfo method.</p>
+
+<pre><code>public class CbvPhysicalFileProvider : IFileProvider, IDisposable
+{
+    int NthOccurence(string s, char t, int n)
+    {
+        return s.TakeWhile(c =&gt; (n -= (c == t ? 1 : 0)) &gt; 0).Count();
+    }
+    private PhysicalFileProvider PhysicalFileProvider { get; set; }
+
+    public CbvPhysicalFileProvider(string root)
+    {
+        PhysicalFileProvider = new PhysicalFileProvider(root);
+    }
+
+    public IFileInfo GetFileInfo(string subpath)
+    {
+        var index = NthOccurence(subpath, '/', 2);
+        var newSubpath = subpath.Substring(index);
+        return PhysicalFileProvider.GetFileInfo(newSubpath);
+    }
+
+    public IDirectoryContents GetDirectoryContents(string subpath)
+    {
+        return PhysicalFileProvider.GetDirectoryContents(subpath);
+    }
+
+    public IChangeToken Watch(string filter)
+    {
+        return PhysicalFileProvider.Watch(filter);
+    }
+
+    public void Dispose()
+    {
+        PhysicalFileProvider.Dispose();
+    }
+}
+</code></pre>
+
+<h3 id="hook-it-up">Hook it up</h3>
+
+<p>Please refer to your apps Startup.cs file.</p>
+
+<pre><code>public class Startup
+{
+    ...
+
+    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    public void Configure(  IApplicationBuilder app,
+                            IHostingEnvironment env,
+                            ILoggerFactory loggerFactory)
+    {
+        var version = typeof(Startup).GetTypeInfo()
+                    .Assembly
+                    .GetCustomAttribute&lt;AssemblyInformationalVersionAttribute&gt;()
+                    .InformationalVersion;
+        if (env.EnvironmentName == &quot;Development&quot;)
+        {
+            version += &quot;.&quot;+ Guid.NewGuid().ToString().GetHashCode();
+        }
+        PingoScriptCbvTagHelper.Version = version;
+        ...
+    }
+    ...
+
+}
+</code></pre>
+
+  </div>
+  <footer>
+    <div class="article-footer">
+      
+
+      
+      
+<div id="share-buttons">
+  <ul>
+    
+    <li>
+      <a href="https://twitter.com/share" class="twitter-share-button">Tweet</a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+    </li>
+    
+    
+    
+    
+    
+    <li>
+      <a data-pocket-label="pocket" data-pocket-count="horizontal" class="pocket-btn" data-lang="en"></a>
+      <script type="text/javascript">!function(d,i){if(!d.getElementById(i)){var j=d.createElement("script");j.id=i;j.src="https://widgets.getpocket.com/v1/j/btn.js?v=1";var w=d.getElementById(i);d.body.appendChild(j);}}(document,"pocket-btn-js");</script>
+    </li>
+    
+  </ul>
+</div>
+
+
+      
+      
+      <div id="pagenavigation-next-prev">
+        
+        <div id="pagenavigation-next">
+          <span class="pagenav-label">Previous</span>
+          <a href="https://ghstahl.github.io/post/">Posts</a>
+        </div>
+        
+        
+      </div>
+      
+    </div>
+  </footer>
+</div>
+        </div>
+        <div class="sidebar">
+  
+  
+  <div class="sidebar-content">
+    <div class="sidebar-header">
+      <span>Author</span>
+    </div>
+    <div id="author">
+      <span>Herb Stahl</span>
+      <div>
+        
+        
+        <a href="https://github.com/ghstahl"><i class="fa fa-github-square fa-2x" aria-hidden="true"></i></a>
+        
+        
+        <a href="https://www.linkedin.com/in/herbstahl"><i class="fa fa-linkedin-square fa-2x" aria-hidden="true"></i></a>
+        
+        
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="sidebar-content">
+    <div class="sidebar-header">
+      <span>RSS</span>
+    </div>
+    <div id="rss">
+      <a href="https://ghstahl.github.io/index.xml" type="application/rss+xml" target="_blank">
+        <i class="fa fa-rss-square fa-2x" aria-hidden="true"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+      </div>
+      <footer>
+        <div id="site-footer-wrap">
+          <div id="site-footer">
+            <span>Powered by <a href="https://gohugo.io/">Hugo</a>.</span>
+            <span>
+              
+              Copyright (c) 2017, <a href="https://ghstahl.github.io/">Software Architecture And Development from the Trenches</a>
+              
+            </span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
+
