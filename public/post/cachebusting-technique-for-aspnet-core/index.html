@@ -77,7 +77,7 @@ It isn&rsquo;t simple browser cache busting we are after, but in later posts thi
 
 <p>Our asp.net core script tag helper will look like this;</p>
 
-<pre><code> &lt;pingo-script-cbv src=&quot;~/lib/jquery/dist/jquery.js&quot;&gt;&lt;/pingo-script-cbv&gt;
+<pre><code> &lt;p7-script-cbv src=&quot;~/lib/jquery/dist/jquery.js&quot;&gt;&lt;/p7-script-cbv&gt;
 </code></pre>
 
 <p>The final outcome in HTML will look like this;</p>
@@ -95,7 +95,7 @@ It isn&rsquo;t simple browser cache busting we are after, but in later posts thi
 
 <h3 id="the-taghelper">The TagHelper</h3>
 
-<pre><code>public class PingoScriptCbvTagHelper : TagHelper
+<pre><code>public class P7ScriptCbvTagHelper : TagHelper
 {
     private static string _version;
 
@@ -199,13 +199,18 @@ It isn&rsquo;t simple browser cache busting we are after, but in later posts thi
         {
             version += &quot;.&quot;+ Guid.NewGuid().ToString().GetHashCode();
         }
-        PingoScriptCbvTagHelper.Version = version;
+        P7ScriptCbvTagHelper.Version = version;
         ...
     }
     ...
 
 }
 </code></pre>
+
+<h3 id="done">Done</h3>
+
+<p>Pretty simple technique that saves work downstream in build systems where I have seen a lot of work appending unique versions on the end of asset links.
+With the rise of SPA javascript apps, and their ability to reference assets with relative paths, this can version any link to inject uniqueness.</p>
 
   </div>
   <footer>

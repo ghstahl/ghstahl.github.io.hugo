@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="087fab63-53db-4758-9cbc-5cba82142fc1" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config.toml" afterPath="$PROJECT_DIR$/config.toml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/404.html" afterPath="$PROJECT_DIR$/public/404.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/index.html" afterPath="$PROJECT_DIR$/public/index.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/post/cachebusting-technique-for-aspnet-core/index.html" afterPath="$PROJECT_DIR$/public/post/cachebusting-technique-for-aspnet-core/index.html" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/public/post/index.html" afterPath="$PROJECT_DIR$/public/post/index.html" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/content/post/cachebusting-technique-for-aspnet-core.md" afterPath="$PROJECT_DIR$/content/post/cachebusting-technique-for-aspnet-core.md" />
     </list>
     <ignored path="bookshelf.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -29,7 +23,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="config.toml" pinned="false" current-in-tab="true">
+      <file leaf-file-name="config.toml" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config.toml">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="85">
@@ -39,11 +33,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="cachebusting-technique-for-aspnet-core.md" pinned="false" current-in-tab="false">
+      <file leaf-file-name="cachebusting-technique-for-aspnet-core.md" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/content/post/cachebusting-technique-for-aspnet-core.md">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="646">
-              <caret line="38" column="1" selection-start-line="38" selection-start-column="1" selection-end-line="38" selection-end-column="1" />
+            <state relative-caret-position="846">
+              <caret line="148" column="144" selection-start-line="148" selection-start-column="144" selection-end-line="148" selection-end-column="144" />
               <folding />
             </state>
           </provider>
@@ -93,6 +87,7 @@
         <option value="$PROJECT_DIR$/layouts/partials/adsense/sidebar.html" />
         <option value="$PROJECT_DIR$/content/post/good-to-great.md" />
         <option value="$PROJECT_DIR$/config.toml" />
+        <option value="$PROJECT_DIR$/content/post/cachebusting-technique-for-aspnet-core.md" />
       </list>
     </option>
   </component>
@@ -148,6 +143,24 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="ghstahl.github.io.hugo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ghstahl.github.io.hugo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ghstahl.github.io.hugo" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="content" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="post" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -600,6 +613,9 @@
   <component name="ShelveChangesManager" show_recycled="false">
     <option name="remove_strategy" value="false" />
   </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="087fab63-53db-4758-9cbc-5cba82142fc1" name="Default" comment="" />
@@ -608,12 +624,12 @@
       <option name="presentableId" value="Default" />
       <updated>1484426210972</updated>
       <workItem from="1484426212373" duration="5785000" />
-      <workItem from="1484442452172" duration="355000" />
+      <workItem from="1484442452172" duration="1723000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="6140000" />
+    <option name="totallyTimeSpent" value="7508000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="174" y="324" width="1451" height="1162" extended-state="0" />
@@ -709,18 +725,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/content/post/cachebusting-technique-for-aspnet-core.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="646">
-          <caret line="38" column="1" selection-start-line="38" selection-start-column="1" selection-end-line="38" selection-end-column="1" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/config.toml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="85">
           <caret line="5" column="37" selection-start-line="5" selection-start-column="37" selection-end-line="5" selection-end-column="37" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/content/post/cachebusting-technique-for-aspnet-core.md">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="846">
+          <caret line="148" column="144" selection-start-line="148" selection-start-column="144" selection-end-line="148" selection-end-column="144" />
           <folding />
         </state>
       </provider>

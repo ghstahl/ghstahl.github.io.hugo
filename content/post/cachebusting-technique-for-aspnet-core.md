@@ -17,7 +17,7 @@ The stock asp.net core script tag helper looks like this;
 
 Our asp.net core script tag helper will look like this;
 ```
- <pingo-script-cbv src="~/lib/jquery/dist/jquery.js"></pingo-script-cbv>
+ <p7-script-cbv src="~/lib/jquery/dist/jquery.js"></p7-script-cbv>
 ```
 
 The final outcome in HTML will look like this;
@@ -35,7 +35,7 @@ There are a couple things we need to do.
 ### The TagHelper
 
 ```
-public class PingoScriptCbvTagHelper : TagHelper
+public class P7ScriptCbvTagHelper : TagHelper
 {
     private static string _version;
 
@@ -137,10 +137,13 @@ public class Startup
         {
             version += "."+ Guid.NewGuid().ToString().GetHashCode();
         }
-        PingoScriptCbvTagHelper.Version = version;
+        P7ScriptCbvTagHelper.Version = version;
         ...
     }
     ...
 
 }
 ```
+### Done
+Pretty simple technique that saves work downstream in build systems where I have seen a lot of work appending unique versions on the end of asset links.
+With the rise of SPA javascript apps, and their ability to reference assets with relative paths, this can version any link to inject uniqueness.
