@@ -3,7 +3,7 @@ languageCode = "en-us"
 title = "Software Architecture And Development from the Trenches"
 theme= "hugo-theme-geppaku"
 googleAnalytics = ""
-disqusShortname = ""
+disqusShortname = "ghstahl-github-io"
 
 [author]
     # If you want to display author information set these
