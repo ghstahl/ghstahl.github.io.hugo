@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="generator" content="Hugo 0.18.1" />
+    <link rel="shortcut icon" href="/images/favicon.ico">
+    <link href="https://ghstahl.github.io/index.xml" rel="alternate" type="application/rss+xml" title="Software Architecture And Development from the Trenches" />
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+    
+    <script src="https://apis.google.com/js/platform.js" async defer>{lang: 'ja'}</script>
+    
+    <link rel="stylesheet" href="https://yandex.st/highlightjs/8.0/styles/default.min.css">
+    <script src="https://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <title>Simple Redirector for Asp.Net Core | Software Architecture And Development from the Trenches</title>
+  </head>
+  <body>
+    <div id="wrap">
+      
+      <header class="site-header">
+        <div class="site-header-left">
+          <a class="site-header-title" href="https://ghstahl.github.io/">Software Architecture And Development from the Trenches</a>
+        </div>
+      </header>
+      <div class="container">
+        <div id="main">
+
+<div class="article">
+  <header>
+    <div class="article-header">
+      <h1>Simple Redirector for Asp.Net Core</h1>
+      <div class="article-meta">
+        <span class="posttime">2017/01/20</span>
+        
+<div class="tags">
+  <ul>
+    
+    <li>
+        <a href="/tags/asp.net-core">ASP.NET Core</a>
+    </li>
+    
+  </ul>
+</div>
+
+
+      </div>
+    </div>
+    
+<div id="share-buttons">
+  <ul>
+    
+    <li>
+      <a href="https://twitter.com/share" class="twitter-share-button">Tweet</a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+    </li>
+    
+    
+    
+    
+    
+    <li>
+      <a data-pocket-label="pocket" data-pocket-count="horizontal" class="pocket-btn" data-lang="en"></a>
+      <script type="text/javascript">!function(d,i){if(!d.getElementById(i)){var j=d.createElement("script");j.id=i;j.src="https://widgets.getpocket.com/v1/j/btn.js?v=1";var w=d.getElementById(i);d.body.appendChild(j);}}(document,"pocket-btn-js");</script>
+    </li>
+    
+  </ul>
+</div>
+
+
+  </header>
+  <div class="content">
+    
+
+<h2 id="introduction">Introduction</h2>
+
+<p>This is going to be a really simplistic implementation of a redirect, but it has served me for 99% of my needs.
+This redirector will be leveraged later in a more complicated CDN implementation.  So stay tuned.</p>
+
+<h2 id="goal">Goal</h2>
+
+<p>I would like to be able to have redirection happen by a simple key in a route.<br />
+i.e.</p>
+
+<pre><code>    https://{redirector endpoint}?  
+        key={my-key}&amp;
+        remaining={url encoded my-final-route}
+</code></pre>
+
+<p>would redirect to</p>
+
+<pre><code>    https://{my-key registered endpoint}/{my-final-route}  
+</code></pre>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>Registration for the redirector looks like the following;</p>
+
+<p><strong>Our Model</strong></p>
+
+<pre><code>public class SimpleRedirectRecord
+{
+    public string Key { get; set; }
+    public string BaseUrl { get; set; }
+    public string Scheme { get; set; }
+}
+</code></pre>
+
+<p><strong>Our Configuration Store Interface</strong></p>
+
+<pre><code>public interface ISimpleRedirectorStore
+{
+    /// &lt;summary&gt;
+    /// Finds the redirector record by key
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;key&quot;&gt;&lt;/param&gt;
+    /// &lt;returns&gt;null or RedirectRecord&lt;/returns&gt;
+    Task&lt;SimpleRedirectRecord&gt; FetchRedirectRecord(string key);
+}    
+
+
+class CInMemorySimpleRedirectStore : ISimpleRedirectorStore
+{
+    private List&lt;SimpleRedirectRecord&gt; _simpleRedirectRecords;
+
+    private List&lt;SimpleRedirectRecord&gt; Records
+    {
+        get
+        {
+            if (_simpleRedirectRecords == null)
+            {
+                _simpleRedirectRecords = new List&lt;SimpleRedirectRecord&gt;()
+                {
+                    new SimpleRedirectRecord() 
+                        {   BaseUrl = &quot;www.google.com&quot;, 
+                            Key = &quot;google&quot;, 
+                            Scheme = &quot;https&quot;},
+                    new SimpleRedirectRecord() 
+                        {   BaseUrl = &quot;www.facebook.com&quot;, 
+                            Key = &quot;facebook&quot;, 
+                            Scheme = &quot;https&quot;},
+                    new SimpleRedirectRecord() 
+                        {   BaseUrl = &quot;www.microsoft.com&quot;, 
+                            Key = &quot;microsoft&quot;, 
+                            Scheme = &quot;https&quot;}
+                };
+            }
+            return _simpleRedirectRecords;
+        }
+    }
+
+    public async Task&lt;SimpleRedirectRecord&gt; FetchRedirectRecord(string key)
+    {
+        var query = from item in Records
+            where item.Key == key
+            select item;
+        return query.FirstOrDefault();
+    }
+}
+</code></pre>
+
+<p><strong>Our Controller</strong></p>
+
+<pre><code>[Area(&quot;SimpleRedirector&quot;)]
+public class HomeController : Controller
+{
+    private ILogger Logger { get; set; }
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private ISession Session =&gt; _httpContextAccessor.HttpContext.Session;
+    private ISimpleRedirectorStore _simpleRedirectorStore;
+
+    public HomeController(IHttpContextAccessor httpContextAccessor,
+        ISimpleRedirectorStore simpleRedirectorStore,
+        ILogger&lt;HomeController&gt; logger)
+    {
+        _httpContextAccessor = httpContextAccessor;
+        _simpleRedirectorStore = simpleRedirectorStore;
+        Logger = logger;
+    }
+
+    public async Task&lt;ActionResult&gt; Index(string key, string remaining)
+    {
+        var record = await _simpleRedirectorStore.FetchRedirectRecord(key);
+        if (record != null)
+        {
+
+            var requestScheme = _httpContextAccessor.HttpContext.Request.Scheme;
+            string scheme = (record.Scheme) ?? requestScheme;
+
+            var realUrl = string.Format(&quot;{0}://{1}/{2}&quot;, 
+                scheme, record.BaseUrl, remaining);
+            return new RedirectResult(realUrl);
+        }
+        return new NotFoundResult();
+    }
+}
+</code></pre>
+
+<p><strong>My Dependency Injection</strong><br />
+I use autofac, so&hellip;</p>
+
+<pre><code>public class AutofacModule : Module
+{
+    protected override void Load(ContainerBuilder builder)
+    {
+        builder.Register(c =&gt; new CInMemorySimpleRedirectStore())
+            .As&lt;ISimpleRedirectorStore&gt;()
+            .SingleInstance();
+    }
+}
+</code></pre>
+
+<p><strong>Finally</strong></p>
+
+<pre><code>http://localhost:7791/SimpleRedirector/Home/Index?key=google&amp;remaining=images/branding/product/ico/googleg_lodp.ico   
+
+</code></pre>
+
+<p>redirects to..</p>
+
+<pre><code>https://www.google.com/images/branding/product/ico/googleg_lodp.ico  
+</code></pre>
+
+  </div>
+  <footer>
+    <div class="article-footer">
+      
+<div class="tags">
+  <ul>
+    
+    <li>
+        <a href="/tags/asp.net-core">ASP.NET Core</a>
+    </li>
+    
+  </ul>
+</div>
+
+
+      
+      
+<div id="share-buttons">
+  <ul>
+    
+    <li>
+      <a href="https://twitter.com/share" class="twitter-share-button">Tweet</a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+    </li>
+    
+    
+    
+    
+    
+    <li>
+      <a data-pocket-label="pocket" data-pocket-count="horizontal" class="pocket-btn" data-lang="en"></a>
+      <script type="text/javascript">!function(d,i){if(!d.getElementById(i)){var j=d.createElement("script");j.id=i;j.src="https://widgets.getpocket.com/v1/j/btn.js?v=1";var w=d.getElementById(i);d.body.appendChild(j);}}(document,"pocket-btn-js");</script>
+    </li>
+    
+  </ul>
+</div>
+
+
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'ghstahl-github-io';
+    var disqus_identifier = 'https:\/\/ghstahl.github.io\/post\/simple-redirector-for-aspnet-core\/';
+    var disqus_title = 'Simple Redirector for Asp.Net Core';
+    var disqus_url = 'https:\/\/ghstahl.github.io\/post\/simple-redirector-for-aspnet-core\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      
+      <div id="pagenavigation-next-prev">
+        
+        <div id="pagenavigation-next">
+          <span class="pagenav-label">Previous</span>
+          <a href="https://ghstahl.github.io/post/cachebusting-technique-for-aspnet-core/">Cachebusting Technique for ASP.Net Core</a>
+        </div>
+        
+        
+      </div>
+      
+    </div>
+  </footer>
+</div>
+        </div>
+        <div class="sidebar">
+  
+  
+  <div class="sidebar-content">
+    <div class="sidebar-header">
+      <span>Author</span>
+    </div>
+    <div id="author">
+      <span>Herb Stahl</span>
+      <div>
+        
+        
+        <a href="https://github.com/ghstahl"><i class="fa fa-github-square fa-2x" aria-hidden="true"></i></a>
+        
+        
+        <a href="https://www.linkedin.com/in/herbstahl"><i class="fa fa-linkedin-square fa-2x" aria-hidden="true"></i></a>
+        
+        
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="sidebar-content">
+    <div class="sidebar-header">
+      <span>Categories</span>
+    </div>
+    <div class="categories">
+      <ul>
+        
+        <li>
+          <a href="/categories/asp.net-core"><span></span>asp.net-core (2)</a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+  
+  <div class="sidebar-content">
+    <div class="sidebar-header">
+      <span>RSS</span>
+    </div>
+    <div id="rss">
+      <a href="https://ghstahl.github.io/index.xml" type="application/rss+xml" target="_blank">
+        <i class="fa fa-rss-square fa-2x" aria-hidden="true"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+      </div>
+      <footer>
+        <div id="site-footer-wrap">
+          <div id="site-footer">
+            <span>Powered by <a href="https://gohugo.io/">Hugo</a>.</span>
+            <span>
+              
+              Copyright (c) 2017, <a href="https://ghstahl.github.io/">Software Architecture And Development from the Trenches</a>
+              
+            </span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
+
