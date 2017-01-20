@@ -6,11 +6,24 @@
     <description>Recent content in Software Architecture And Development from the Trenches on Software Architecture And Development from the Trenches</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 14 Jan 2017 14:09:44 -0800</lastBuildDate>
+    <lastBuildDate>Fri, 20 Jan 2017 08:35:55 -0800</lastBuildDate>
     <atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>Cachebusting technique for asp.net core</title>
+      <title>Simple Redirector for Asp.Net Core</title>
+      <link>https://ghstahl.github.io/post/simple-redirector-for-aspnet-core/</link>
+      <pubDate>Fri, 20 Jan 2017 08:35:55 -0800</pubDate>
+      
+      <guid>https://ghstahl.github.io/post/simple-redirector-for-aspnet-core/</guid>
+      <description>Introduction This is going to be a really simplistic implementation of a redirect, but it has served me for 99% of my needs. This redirector will be leveraged later in a more complicated CDN implementation. So stay tuned.
+Goal I would like to be able to have redirection happen by a simple key in a route.
+i.e.
+ https://{redirector endpoint}? key={my-key}&amp;amp; remaining={url encoded my-final-route}  would redirect to
+ https://{my-key registered endpoint}/{my-final-route}  Implementation Registration for the redirector looks like the following;</description>
+    </item>
+    
+    <item>
+      <title>Cachebusting Technique for ASP.Net Core</title>
       <link>https://ghstahl.github.io/post/cachebusting-technique-for-aspnet-core/</link>
       <pubDate>Sat, 14 Jan 2017 14:09:44 -0800</pubDate>
       

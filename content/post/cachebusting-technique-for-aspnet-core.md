@@ -1,8 +1,9 @@
 +++
 date = "2017-01-14T14:09:44-08:00"
-title = "Cachebusting technique for asp.net core"
+title = "Cachebusting Technique for ASP.Net Core"
 draft = false
-
+tags = ["ASP.NET Core"]
+categories = ["ASP.NET Core"]
 +++
 
 ## Goal
