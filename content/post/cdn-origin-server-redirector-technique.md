@@ -7,11 +7,13 @@ categories = ["ASP.NET Core"]
 slug = ""
 
 +++
+## Pre Reading
+This is a continuation on the previous [post](/post/simple-redirector-for-aspnet-core/) on our simple redirector technique.
+
 
 ## Problem
 I had the joy of setting up a CDN configuration in Akamai.  Though it wasn't that bad, the rarity of that task made me never want to do it twice.
 I only really needed to CDN cache static assets, and chose to harden the rules for anyone that wanted to use my configuration.
-This is a continuation on the previous post on our simple redirector technique.
 
 ## The CDN Configuration Rules.
 1. I am going to set the CDN time to live for 1 year

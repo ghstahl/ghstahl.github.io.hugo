@@ -50,8 +50,8 @@
         <entry file="file://$PROJECT_DIR$/content/post/cdn-origin-server-redirector-technique.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="27">
-                <caret line="26" column="3" lean-forward="true" selection-start-line="26" selection-start-column="3" selection-end-line="26" selection-end-column="3" />
+              <first_editor relative-caret-position="272">
+                <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
                 <folding />
               </first_editor>
               <second_editor />
@@ -129,8 +129,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="852" />
-    <option name="y" value="75" />
+    <option name="x" value="1418" />
+    <option name="y" value="350" />
     <option name="width" value="1625" />
     <option name="height" value="1343" />
   </component>
@@ -665,15 +665,15 @@
       <updated>1484426210972</updated>
       <workItem from="1484426212373" duration="5785000" />
       <workItem from="1484442452172" duration="3425000" />
-      <workItem from="1484929995815" duration="6336000" />
+      <workItem from="1484929995815" duration="7681000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="15546000" />
+    <option name="totallyTimeSpent" value="16891000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="852" y="75" width="1625" height="1343" extended-state="0" />
+    <frame x="1418" y="350" width="1625" height="1343" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -864,8 +864,8 @@
       </provider>
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="27">
-            <caret line="26" column="3" lean-forward="true" selection-start-line="26" selection-start-column="3" selection-end-line="26" selection-end-column="3" />
+          <first_editor relative-caret-position="272">
+            <caret line="16" column="0" lean-forward="true" selection-start-line="16" selection-start-column="0" selection-end-line="16" selection-end-column="0" />
             <folding />
           </first_editor>
           <second_editor />
