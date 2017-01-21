@@ -9,6 +9,16 @@
     <atom:link href="/tags/asp.net-core/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>CDN Origin Server Redirector Technique</title>
+      <link>https://ghstahl.github.io/post/cdn-origin-server-redirector-technique/</link>
+      <pubDate>Sat, 21 Jan 2017 08:51:52 -0800</pubDate>
+      
+      <guid>https://ghstahl.github.io/post/cdn-origin-server-redirector-technique/</guid>
+      <description>Problem I had the joy of setting up a CDN configuration in Akamai. Though it wasn&amp;rsquo;t that bad, the rarity of that task made me never want to do it twice. I only really needed to CDN cache static assets, and chose to harden the rules for anyone that wanted to use my configuration. This is a continuation on the previous post on our simple redirector technique.
+The CDN Configuration Rules.</description>
+    </item>
+    
+    <item>
       <title>Simple Redirector for Asp.Net Core</title>
       <link>https://ghstahl.github.io/post/simple-redirector-for-aspnet-core/</link>
       <pubDate>Fri, 20 Jan 2017 08:35:55 -0800</pubDate>

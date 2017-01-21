@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="087fab63-53db-4758-9cbc-5cba82142fc1" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/content/post/cachebusting-technique-for-aspnet-core.md" afterPath="$PROJECT_DIR$/content/post/cachebusting-technique-for-aspnet-core.md" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/content/post/cdn-origin-server-redirector-technique.md" afterPath="$PROJECT_DIR$/content/post/cdn-origin-server-redirector-technique.md" />
     </list>
     <ignored path="bookshelf.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -48,12 +46,12 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="cdn-origin-server-redirector-technique.md" pinned="false" current-in-tab="false">
+      <file leaf-file-name="cdn-origin-server-redirector-technique.md" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/content/post/cdn-origin-server-redirector-technique.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="34">
-                <caret line="2" column="12" lean-forward="false" selection-start-line="2" selection-start-column="12" selection-end-line="2" selection-end-column="12" />
+              <first_editor relative-caret-position="27">
+                <caret line="26" column="3" lean-forward="true" selection-start-line="26" selection-start-column="3" selection-end-line="26" selection-end-column="3" />
                 <folding />
               </first_editor>
               <second_editor />
@@ -61,12 +59,12 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="simple-redirector-for-aspnet-core.md" pinned="false" current-in-tab="true">
+      <file leaf-file-name="simple-redirector-for-aspnet-core.md" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/content/post/simple-redirector-for-aspnet-core.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="1088">
-                <caret line="64" column="9" lean-forward="true" selection-start-line="64" selection-start-column="9" selection-end-line="64" selection-end-column="9" />
+              <first_editor relative-caret-position="357">
+                <caret line="45" column="0" lean-forward="false" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="3" />
                 <folding />
               </first_editor>
               <second_editor />
@@ -131,8 +129,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="999" />
-    <option name="y" value="155" />
+    <option name="x" value="852" />
+    <option name="y" value="75" />
     <option name="width" value="1625" />
     <option name="height" value="1343" />
   </component>
@@ -667,15 +665,15 @@
       <updated>1484426210972</updated>
       <workItem from="1484426212373" duration="5785000" />
       <workItem from="1484442452172" duration="3425000" />
-      <workItem from="1484929995815" duration="4102000" />
+      <workItem from="1484929995815" duration="6336000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="13312000" />
+    <option name="totallyTimeSpent" value="15546000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="999" y="155" width="1625" height="1343" extended-state="0" />
+    <frame x="852" y="75" width="1625" height="1343" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -829,6 +827,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/content/post/simple-redirector-for-aspnet-core.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="357">
+            <caret line="45" column="0" lean-forward="false" selection-start-line="45" selection-start-column="0" selection-end-line="45" selection-end-column="3" />
+            <folding />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/content/post/cachebusting-technique-for-aspnet-core.md">
       <provider editor-type-id="text-editor">
         <state relative-caret-position="119">
@@ -855,19 +864,8 @@
       </provider>
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="34">
-            <caret line="2" column="12" lean-forward="false" selection-start-line="2" selection-start-column="12" selection-end-line="2" selection-end-column="12" />
-            <folding />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/content/post/simple-redirector-for-aspnet-core.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="1088">
-            <caret line="64" column="9" lean-forward="true" selection-start-line="64" selection-start-column="9" selection-end-line="64" selection-end-column="9" />
+          <first_editor relative-caret-position="27">
+            <caret line="26" column="3" lean-forward="true" selection-start-line="26" selection-start-column="3" selection-end-line="26" selection-end-column="3" />
             <folding />
           </first_editor>
           <second_editor />

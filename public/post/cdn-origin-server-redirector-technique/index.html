@@ -16,7 +16,7 @@
     <script>hljs.initHighlightingOnLoad();</script>
     
     <link rel="stylesheet" type="text/css" href="/css/style.css">
-    <title>Simple Redirector for Asp.Net Core | Software Architecture And Development from the Trenches</title>
+    <title>CDN Origin Server Redirector Technique | Software Architecture And Development from the Trenches</title>
   </head>
   <body>
     <div id="wrap">
@@ -32,15 +32,19 @@
 <div class="article">
   <header>
     <div class="article-header">
-      <h1>Simple Redirector for Asp.Net Core</h1>
+      <h1>CDN Origin Server Redirector Technique</h1>
       <div class="article-meta">
-        <span class="posttime">2017/01/20</span>
+        <span class="posttime">2017/01/21</span>
         
 <div class="tags">
   <ul>
     
     <li>
         <a href="/tags/asp.net-core">ASP.NET Core</a>
+    </li>
+    
+    <li>
+        <a href="/tags/cdn">CDN</a>
     </li>
     
   </ul>
@@ -75,154 +79,84 @@
   <div class="content">
     
 
-<h2 id="introduction">Introduction</h2>
+<h2 id="problem">Problem</h2>
 
-<p>This is going to be a really simplistic implementation of a redirect, but it has served me for 99% of my needs.
-This redirector will be leveraged later in a more complicated CDN implementation.  So stay tuned.</p>
+<p>I had the joy of setting up a CDN configuration in Akamai.  Though it wasn&rsquo;t that bad, the rarity of that task made me never want to do it twice.
+I only really needed to CDN cache static assets, and chose to harden the rules for anyone that wanted to use my configuration.
+This is a continuation on the previous post on our simple redirector technique.</p>
 
-<h2 id="goal">Goal</h2>
+<h2 id="the-cdn-configuration-rules">The CDN Configuration Rules.</h2>
 
-<p>I would like to be able to have redirection happen by a simple key in a route.<br />
-i.e.</p>
+<ol>
+<li>I am going to set the CDN time to live for 1 year</li>
+<li>I will NOT be clearing your CDN cache just because you made a mistake</li>
+<li>Our CDN will be configured to chase redirects.  4 deep in this case.</li>
+</ol>
 
-<pre><code>    https://{redirector endpoint}?  
-        key={my-key}&amp;
-        remaining={url encoded my-final-route}
+<h2 id="story-requirement">Story Requirement</h2>
+
+<p><strong>I would like to be able to edge cache in the following way.</strong></p>
+
+<pre><code>https://{mycdn.akamai.com}/cdn/{key}/{my-everything-else}
+    would eventually find its way via redirects to   
+https://{my origin server endpoint}/{my-everything-else} 
 </code></pre>
 
-<p>would redirect to</p>
+<p><strong>I would like to be able to edge cache in the following way, but with a throw-away version scheme.</strong></p>
 
-<pre><code>    https://{my-key registered endpoint}/{my-final-route}  
+<pre><code>https://{mycdn.akamai.com}/cdn-v/{key}/{version}/{my-everything-else}
+    would eventually find its way via redirects to   
+https://{my origin server endpoint}/{my-everything-else} 
 </code></pre>
 
 <h2 id="implementation">Implementation</h2>
 
-<p>Registration for the redirector looks like the following;</p>
+<p>This is built upon the previous simple redirector work.</p>
 
-<p><strong>Our Model</strong></p>
+<p><strong>ASP.NET Core URL Rewriter Rules</strong></p>
 
-<pre><code>public class SimpleRedirectRecord
+<pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;configuration&gt;
+  &lt;system.webServer&gt;
+    &lt;rewrite&gt;
+      &lt;rules&gt;
+        &lt;rule name=&quot;CDN Cache Buster V&quot;&gt;
+          &lt;match url=&quot;^cdn-v/([_0-9a-zA-Z-]+)/([_0-9a-zA-Z-]+)/(.*)$&quot; /&gt;
+          &lt;action type=&quot;Rewrite&quot; url=&quot;SimpleRedirector/Home/Index?key={R:2}&amp;amp;remaining={R:3}&quot; /&gt;
+        &lt;/rule&gt;
+        &lt;rule name=&quot;CDN&quot;&gt;
+          &lt;match url=&quot;^cdn/([_0-9a-zA-Z-]+)/(.*)$&quot; /&gt;
+          &lt;action type=&quot;Rewrite&quot; url=&quot;SimpleRedirector/Home/Index?key={R:1}&amp;amp;remaining={R:2}&quot; /&gt;
+        &lt;/rule&gt;
+      &lt;/rules&gt;
+    &lt;/rewrite&gt;
+  &lt;/system.webServer&gt;
+&lt;/configuration&gt;
+</code></pre>
+
+<p><strong>Hooking up URL Rewrite</strong></p>
+
+<pre><code class="language-c#">public void Configure(  IApplicationBuilder app, 
+                        IHostingEnvironment env, 
+                        ILoggerFactory loggerFactory)
 {
-    public string Key { get; set; }
-    public string BaseUrl { get; set; }
-    public string Scheme { get; set; }
+    ...  
+
+    var root = env.ContentRootFileProvider;
+    var rewriteOptions = new RewriteOptions()
+        .AddIISUrlRewrite(root, &quot;IISUrlRewrite.config&quot;);
+    app.UseRewriter(rewriteOptions);
+
+    ...
 }
 </code></pre>
 
-<p><strong>Our Configuration Store Interface</strong></p>
+<h2 id="finally">Finally</h2>
 
-<pre><code>public interface ISimpleRedirectorStore
-{
-    /// &lt;summary&gt;
-    /// Finds the redirector record by key
-    /// &lt;/summary&gt;
-    /// &lt;param name=&quot;key&quot;&gt;&lt;/param&gt;
-    /// &lt;returns&gt;null or RedirectRecord&lt;/returns&gt;
-    Task&lt;SimpleRedirectRecord&gt; FetchRedirectRecord(string key);
-}    
-
-
-class CInMemorySimpleRedirectStore : ISimpleRedirectorStore
-{
-    private List&lt;SimpleRedirectRecord&gt; _simpleRedirectRecords;
-
-    private List&lt;SimpleRedirectRecord&gt; Records
-    {
-        get
-        {
-            if (_simpleRedirectRecords == null)
-            {
-                _simpleRedirectRecords = new List&lt;SimpleRedirectRecord&gt;()
-                {
-                    new SimpleRedirectRecord() 
-                        {   BaseUrl = &quot;www.google.com&quot;, 
-                            Key = &quot;google&quot;, 
-                            Scheme = &quot;https&quot;},
-                    new SimpleRedirectRecord() 
-                        {   BaseUrl = &quot;www.facebook.com&quot;, 
-                            Key = &quot;facebook&quot;, 
-                            Scheme = &quot;https&quot;},
-                    new SimpleRedirectRecord() 
-                        {   BaseUrl = &quot;www.microsoft.com&quot;, 
-                            Key = &quot;microsoft&quot;, 
-                            Scheme = &quot;https&quot;}
-                };
-            }
-            return _simpleRedirectRecords;
-        }
-    }
-
-    public async Task&lt;SimpleRedirectRecord&gt; FetchRedirectRecord(string key)
-    {
-        var query = from item in Records
-            where item.Key == key
-            select item;
-        return query.FirstOrDefault();
-    }
-}
-</code></pre>
-
-<p><strong>Our Controller</strong></p>
-
-<pre><code>[Area(&quot;SimpleRedirector&quot;)]
-public class HomeController : Controller
-{
-    private ILogger Logger { get; set; }
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private ISession Session =&gt; _httpContextAccessor.HttpContext.Session;
-    private ISimpleRedirectorStore _simpleRedirectorStore;
-
-    public HomeController(IHttpContextAccessor httpContextAccessor,
-        ISimpleRedirectorStore simpleRedirectorStore,
-        ILogger&lt;HomeController&gt; logger)
-    {
-        _httpContextAccessor = httpContextAccessor;
-        _simpleRedirectorStore = simpleRedirectorStore;
-        Logger = logger;
-    }
-
-    public async Task&lt;ActionResult&gt; Index(string key, string remaining)
-    {
-        var record = await _simpleRedirectorStore.FetchRedirectRecord(key);
-        if (record != null)
-        {
-
-            var requestScheme = _httpContextAccessor.HttpContext.Request.Scheme;
-            string scheme = (record.Scheme) ?? requestScheme;
-
-            var realUrl = string.Format(&quot;{0}://{1}/{2}&quot;, 
-                scheme, record.BaseUrl, remaining);
-            return new RedirectResult(realUrl);
-        }
-        return new NotFoundResult();
-    }
-}
-</code></pre>
-
-<p><strong>My Dependency Injection</strong><br />
-I use autofac, so&hellip;</p>
-
-<pre><code>public class AutofacModule : Module
-{
-    protected override void Load(ContainerBuilder builder)
-    {
-        builder.Register(c =&gt; new CInMemorySimpleRedirectStore())
-            .As&lt;ISimpleRedirectorStore&gt;()
-            .SingleInstance();
-    }
-}
-</code></pre>
-
-<p><strong>Finally</strong></p>
-
-<pre><code>http://localhost:7791/SimpleRedirector/Home/Index?key=google&amp;remaining=images/branding/product/ico/googleg_lodp.ico   
-
-</code></pre>
-
-<p>redirects to..</p>
-
-<pre><code>https://www.google.com/images/branding/product/ico/googleg_lodp.ico  
-</code></pre>
+<p>In summary, any CDN provider you choose needs to be able to chase redirects.<br />
+Also, this technique states that versioning is the problem of the origin servers and shall not be fixed or accounted for by the CDN providers.
+This will make sure that your CDN configuration doesn&rsquo;t get out of control, especially if you need to swap out providers.
+ Keep it simple!</p>
 
   </div>
   <footer>
@@ -233,6 +167,10 @@ I use autofac, so&hellip;</p>
     
     <li>
         <a href="/tags/asp.net-core">ASP.NET Core</a>
+    </li>
+    
+    <li>
+        <a href="/tags/cdn">CDN</a>
     </li>
     
   </ul>
@@ -265,9 +203,9 @@ I use autofac, so&hellip;</p>
       <div id="disqus_thread"></div>
 <script type="text/javascript">
     var disqus_shortname = 'ghstahl-github-io';
-    var disqus_identifier = 'https:\/\/ghstahl.github.io\/post\/simple-redirector-for-aspnet-core\/';
-    var disqus_title = 'Simple Redirector for Asp.Net Core';
-    var disqus_url = 'https:\/\/ghstahl.github.io\/post\/simple-redirector-for-aspnet-core\/';
+    var disqus_identifier = 'https:\/\/ghstahl.github.io\/post\/cdn-origin-server-redirector-technique\/';
+    var disqus_title = 'CDN Origin Server Redirector Technique';
+    var disqus_url = 'https:\/\/ghstahl.github.io\/post\/cdn-origin-server-redirector-technique\/';
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
@@ -282,14 +220,9 @@ I use autofac, so&hellip;</p>
         
         <div id="pagenavigation-next">
           <span class="pagenav-label">Previous</span>
-          <a href="https://ghstahl.github.io/post/cachebusting-technique-for-aspnet-core/">Cachebusting Technique for ASP.Net Core</a>
+          <a href="https://ghstahl.github.io/post/simple-redirector-for-aspnet-core/">Simple Redirector for Asp.Net Core</a>
         </div>
         
-        
-        <div id="pagenavigation-prev">
-          <span class="pagenav-label">Next</span>
-          <a href="https://ghstahl.github.io/post/cdn-origin-server-redirector-technique/">CDN Origin Server Redirector Technique</a>
-        </div>
         
       </div>
       
