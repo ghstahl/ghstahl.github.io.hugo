@@ -9,6 +9,16 @@
     <atom:link href="/tags/aspnet-core/index.xml" rel="self" type="application/rss+xml" />
     
     <item>
+      <title>Simple Resx String Fetcher for Asp.Net Core</title>
+      <link>https://ghstahl.github.io/post/simple-resx-fetcher-aspnet-core/</link>
+      <pubDate>Mon, 23 Jan 2017 06:36:12 -0800</pubDate>
+      
+      <guid>https://ghstahl.github.io/post/simple-resx-fetcher-aspnet-core/</guid>
+      <description>As I write this, it should be also filed under the &amp;ldquo;Enough with the never ending REST apis&amp;rdquo; Category. This Api will eventually be implemented in my Facebook GraphQL work.
+Background I wanted a single REST api that would be able to fetch all strings in a Resx for a given language. Furthermore, I should be able to pick how those strings were to be packaged. Some developers like object trees, others might need json arrays that look more like database records.</description>
+    </item>
+    
+    <item>
       <title>CDN Origin Server Redirector Technique</title>
       <link>https://ghstahl.github.io/post/cdn-origin-server-redirector-technique/</link>
       <pubDate>Sat, 21 Jan 2017 08:51:52 -0800</pubDate>

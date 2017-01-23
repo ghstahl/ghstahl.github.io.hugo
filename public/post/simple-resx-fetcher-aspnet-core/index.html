@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="generator" content="Hugo 0.18.1" />
+    <link rel="shortcut icon" href="/images/favicon.ico">
+    <link href="https://ghstahl.github.io/index.xml" rel="alternate" type="application/rss+xml" title="Software Architecture And Development from the Trenches" />
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css">
+    
+    <script src="https://apis.google.com/js/platform.js" async defer>{lang: 'ja'}</script>
+    
+    <link rel="stylesheet" href="https://yandex.st/highlightjs/8.0/styles/default.min.css">
+    <script src="https://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+    <title>Simple Resx String Fetcher for Asp.Net Core | Software Architecture And Development from the Trenches</title>
+  </head>
+  <body>
+    <div id="wrap">
+      
+      <header class="site-header">
+        <div class="site-header-left">
+          <a class="site-header-title" href="https://ghstahl.github.io/">Software Architecture And Development from the Trenches</a>
+        </div>
+      </header>
+      <div class="container">
+        <div id="main">
+
+<div class="article">
+  <header>
+    <div class="article-header">
+      <h1>Simple Resx String Fetcher for Asp.Net Core</h1>
+      <div class="article-meta">
+        <span class="posttime">2017/01/23</span>
+        
+<div class="tags">
+  <ul>
+    
+    <li>
+        <a href="/tags/aspnet-core">ASPNET Core</a>
+    </li>
+    
+    <li>
+        <a href="/tags/localization">Localization</a>
+    </li>
+    
+  </ul>
+</div>
+
+
+      </div>
+    </div>
+    
+<div id="share-buttons">
+  <ul>
+    
+    <li>
+      <a href="https://twitter.com/share" class="twitter-share-button">Tweet</a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+    </li>
+    
+    
+    
+    
+    
+    <li>
+      <a data-pocket-label="pocket" data-pocket-count="horizontal" class="pocket-btn" data-lang="en"></a>
+      <script type="text/javascript">!function(d,i){if(!d.getElementById(i)){var j=d.createElement("script");j.id=i;j.src="https://widgets.getpocket.com/v1/j/btn.js?v=1";var w=d.getElementById(i);d.body.appendChild(j);}}(document,"pocket-btn-js");</script>
+    </li>
+    
+  </ul>
+</div>
+
+
+  </header>
+  <div class="content">
+    
+
+<p>As I write this, it should be also filed under the <strong>&ldquo;Enough with the never ending REST apis&rdquo;</strong> Category.  This Api will eventually be implemented in my Facebook GraphQL work.</p>
+
+<h2 id="background">Background</h2>
+
+<p>I wanted a single REST api that would be able to fetch all strings in a Resx for a given language.  Furthermore, I should be able to pick how those strings were to be packaged.  Some developers like object trees, others might need json arrays that look more like database records.</p>
+
+<p>For this project I would need to have a core way to read the data from Resx, and also provide developers the means to extend the treatment of the data prior to returning it.</p>
+
+<h2 id="data-treatment">Data Treatment</h2>
+
+<p>This is stock and trade interfaces and class implementations.  The treatments will evaluate a list of LocalizedString, and build a custom response.</p>
+
+<p><strong>The Interface</strong></p>
+
+<pre><code class="language-c#">public interface ILocalizedStringResultTreatment
+{
+    object Process(IEnumerable&lt;LocalizedString&gt; resourceSet);
+}
+</code></pre>
+
+<p><strong>Some Implementations</strong></p>
+
+<pre><code class="language-c#">public class StringResourceSet
+{
+    public string Key { get; set; }
+    public string Value { get; set; }
+}
+
+public class KeyValueArray: ILocalizedStringResultTreatment
+{
+    public object Process(IEnumerable&lt;LocalizedString&gt; resourceSet)
+    {
+        var result = (
+                from  entry in resourceSet
+                select new StringResourceSet { 
+                    Key = entry.Name, 
+                    Value = entry.Value })
+            .ToList();
+        return result;
+    }
+}
+
+public class KeyValueObject: ILocalizedStringResultTreatment
+{
+    public object Process(IEnumerable&lt;LocalizedString&gt; resourceSet)
+    {
+        var expando = new System.Dynamic.ExpandoObject();
+        var expandoMap = expando as IDictionary&lt;string, object&gt;;
+        foreach (var rs in resourceSet)
+        {
+            expandoMap[rs.Name] = rs.Value;
+        }
+        return expando;
+    }
+}  
+</code></pre>
+
+<h2 id="resources-in-asp-net-core">Resources in Asp.Net Core</h2>
+
+<p>Resx in Asp.Net Core has changed a little bit, where you probably shouldn&rsquo;t create a open ended default resouce.
+i.e. don&rsquo;t do Main.resx, but do do Main.en-US.resx.  in your startup configuration you call out that en-US is your default.</p>
+
+<p>So what I did was create a bunch of Main.[culture].resx file, and also included the following model class in the same namespace as where my resx files live.</p>
+
+<pre><code class="language-cfml">public class Main
+{
+
+}
+</code></pre>
+
+<p><img src="/images/project-resx.png" alt=" " /></p>
+
+<h2 id="startup-cs-hookup">Startup.cs Hookup</h2>
+
+<pre><code class="language-c#">public void Configure(IApplicationBuilder app, 
+    IHostingEnvironment env, 
+    ILoggerFactory loggerFactory)
+{
+    ...
+    var supportedCultures = new List&lt;CultureInfo&gt;
+    {
+        new CultureInfo(&quot;en-US&quot;),
+        new CultureInfo(&quot;en-AU&quot;),
+        new CultureInfo(&quot;en-GB&quot;),
+        new CultureInfo(&quot;es-ES&quot;),
+        new CultureInfo(&quot;ja-JP&quot;),
+        new CultureInfo(&quot;fr-FR&quot;),
+        new CultureInfo(&quot;zh&quot;),
+        new CultureInfo(&quot;zh-CN&quot;)
+    };
+    var options = new RequestLocalizationOptions
+    {
+        DefaultRequestCulture = new RequestCulture(&quot;en-US&quot;),
+        SupportedCultures = supportedCultures,
+        SupportedUICultures = supportedCultures
+    };
+    app.UseRequestLocalization(options);
+    ...
+}
+</code></pre>
+
+<h2 id="controller-implementation-rest">Controller Implementation (REST)</h2>
+
+<p>As I stated earlier, I  am going to abandon REST and go with GraphQL, but for now this is what I got.</p>
+
+<pre><code class="language-c#">public static class ResourceApiExtensions
+{
+    public static int GetSequenceHashCode&lt;T&gt;(this IEnumerable&lt;T&gt; sequence)
+    {
+        return sequence
+            .Select(item =&gt; item.GetHashCode())
+            .Aggregate((total, nextCode) =&gt; total ^ nextCode);
+    }
+}
+
+[Route(&quot;ResourceApi/[controller]&quot;)]
+public class ResourceController : Controller
+{
+    private ILogger Logger { get; set; }
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private ISession Session =&gt; _httpContextAccessor.HttpContext.Session;
+    private IStringLocalizerFactory _localizerFactory;
+    private IRequestCultureProvider _requestCultureProvider;
+    private readonly IStringLocalizer&lt;ResourceController&gt; _localizer;
+    private IMemoryCache _cache;
+
+
+    public ResourceController(IHttpContextAccessor httpContextAccessor,
+        IMemoryCache memoryCache,
+        IStringLocalizerFactory localizerFactory,
+        ILogger&lt;ResourceController&gt; logger)
+    {
+        _httpContextAccessor = httpContextAccessor;
+        _cache = memoryCache;
+        _localizerFactory = localizerFactory;
+        Logger = logger;
+    }
+
+    [Route(&quot;ByDynamic&quot;)]
+    [Produces(typeof(object))]
+    public async Task&lt;IActionResult&gt; GetResourceSet(string id, string treatment)
+    {
+        var rqf = Request.HttpContext.Features.Get&lt;IRequestCultureFeature&gt;();
+        // Culture contains the information of the requested culture
+        var currentCulture = rqf.RequestCulture.Culture;
+
+        // Load Header collection into NameValueCollection object.
+        var headers = _httpContextAccessor.HttpContext.Request.Headers;
+        if (headers.ContainsKey(&quot;X-Culture&quot;))
+        {
+            var hCulture = headers[&quot;X-Culture&quot;];
+            CultureInfo hCultureInfo = currentCulture;
+            try
+            {
+                hCultureInfo = new CultureInfo(hCulture);
+            }
+            catch (Exception)
+            {
+                hCultureInfo = currentCulture;
+            }
+            currentCulture = hCultureInfo;
+        }
+        var key = new List&lt;object&gt; { currentCulture, id, treatment }
+            .AsReadOnly()
+            .GetSequenceHashCode();
+        var newValue = new Lazy&lt;object&gt;(() =&gt; 
+            { 
+                return InternalGetResourceSet(id, treatment, currentCulture); 
+            });
+
+
+        var value = _cache.GetOrCreate(
+            key.ToString(CultureInfo.InvariantCulture), 
+            entry =&gt;
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(100);
+                return newValue;
+            });
+
+        var result = value != null ? value.Value : newValue.Value;
+        return Ok(result);
+    }
+
+
+    private object InternalGetResourceSet(  string id, 
+                                            string treatment, 
+                                            CultureInfo cultureInfo)
+    {
+        try
+        {
+            var typeId = TypeHelper&lt;Type&gt;.GetTypeByFullName(id);
+            if (typeId != null)
+            {
+                if (string.IsNullOrEmpty(treatment))
+                {
+                     treatment = &quot;P7.Core.Localization.Treatment.KeyValueObject,P7.Core&quot;;
+                }
+                var typeTreatment = TypeHelper&lt;Type&gt;
+                                        .GetTypeByFullName(treatment);
+                var localizer = _localizerFactory.Create(typeId);
+
+                var resourceSet = localizer.WithCulture(cultureInfo)
+                                    .GetAllStrings(true);
+                var instance = Activator.CreateInstance(typeTreatment) 
+                                    as ILocalizedStringResultTreatment;
+                var result = instance.Process(resourceSet);
+                return result;
+            }
+        }
+        catch (Exception e)
+        {
+            return &quot;&quot;;
+        }
+        return &quot;&quot;;
+    }
+}
+
+</code></pre>
+
+<h2 id="usage">Usage</h2>
+
+<p>You basically pass 2 arguments.</p>
+
+<ol>
+<li><p>id = UrlEncoded(Fully qualifed class name of the resouce)</p></li>
+
+<li><p>treatment=UrlEncoded(Fully qualifed class name of the treatment implementation)</p></li>
+</ol>
+
+<p>You will notice that I pass in as the &ldquo;id&rdquo; my &ldquo;Main&rdquo; model.</p>
+
+<pre><code class="language-html">http://localhost:7791/ResourceApi/Resource/ByDynamic?id=p7.main.Resources.Main%2Cp7.main&amp;treatment=P7.Core.Localization.Treatment.KeyValueArray%2CP7.Core
+</code></pre>
+
+  </div>
+  <footer>
+    <div class="article-footer">
+      
+<div class="tags">
+  <ul>
+    
+    <li>
+        <a href="/tags/aspnet-core">ASPNET Core</a>
+    </li>
+    
+    <li>
+        <a href="/tags/localization">Localization</a>
+    </li>
+    
+  </ul>
+</div>
+
+
+      
+      
+<div id="share-buttons">
+  <ul>
+    
+    <li>
+      <a href="https://twitter.com/share" class="twitter-share-button">Tweet</a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+    </li>
+    
+    
+    
+    
+    
+    <li>
+      <a data-pocket-label="pocket" data-pocket-count="horizontal" class="pocket-btn" data-lang="en"></a>
+      <script type="text/javascript">!function(d,i){if(!d.getElementById(i)){var j=d.createElement("script");j.id=i;j.src="https://widgets.getpocket.com/v1/j/btn.js?v=1";var w=d.getElementById(i);d.body.appendChild(j);}}(document,"pocket-btn-js");</script>
+    </li>
+    
+  </ul>
+</div>
+
+
+      <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'ghstahl-github-io';
+    var disqus_identifier = 'https:\/\/ghstahl.github.io\/post\/simple-resx-fetcher-aspnet-core\/';
+    var disqus_title = 'Simple Resx String Fetcher for Asp.Net Core';
+    var disqus_url = 'https:\/\/ghstahl.github.io\/post\/simple-resx-fetcher-aspnet-core\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+      
+      <div id="pagenavigation-next-prev">
+        
+        <div id="pagenavigation-next">
+          <span class="pagenav-label">Previous</span>
+          <a href="https://ghstahl.github.io/post/cdn-origin-server-redirector-technique/">CDN Origin Server Redirector Technique</a>
+        </div>
+        
+        
+      </div>
+      
+    </div>
+  </footer>
+</div>
+        </div>
+        <div class="sidebar">
+  
+  
+  <div class="sidebar-content">
+    <div class="sidebar-header">
+      <span>Author</span>
+    </div>
+    <div id="author">
+      <span>Herb Stahl</span>
+      <div>
+        
+        
+        <a href="https://github.com/ghstahl"><i class="fa fa-github-square fa-2x" aria-hidden="true"></i></a>
+        
+        
+        <a href="https://www.linkedin.com/in/herbstahl"><i class="fa fa-linkedin-square fa-2x" aria-hidden="true"></i></a>
+        
+        
+      </div>
+    </div>
+  </div>
+  
+  
+  <div class="sidebar-content">
+    <div class="sidebar-header">
+      <span>Categories</span>
+    </div>
+    <div class="categories">
+      <ul>
+        
+        <li>
+          <a href="/categories/aspnet-core"><span></span>aspnet-core (4)</a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+  
+  <div class="sidebar-content">
+    <div class="sidebar-header">
+      <span>RSS</span>
+    </div>
+    <div id="rss">
+      <a href="https://ghstahl.github.io/index.xml" type="application/rss+xml" target="_blank">
+        <i class="fa fa-rss-square fa-2x" aria-hidden="true"></i>
+      </a>
+    </div>
+  </div>
+</div>
+
+      </div>
+      <footer>
+        <div id="site-footer-wrap">
+          <div id="site-footer">
+            <span>Powered by <a href="https://gohugo.io/">Hugo</a>.</span>
+            <span>
+              
+              Copyright (c) 2017, <a href="https://ghstahl.github.io/">Software Architecture And Development from the Trenches</a>
+              
+            </span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
+

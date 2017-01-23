@@ -2,6 +2,11 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://ghstahl.github.io/post/simple-resx-fetcher-aspnet-core/</loc>
+    <lastmod>2017-01-23T06:36:12-08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://ghstahl.github.io/post/cdn-origin-server-redirector-technique/</loc>
     <lastmod>2017-01-21T08:51:52-08:00</lastmod>
   </url>
@@ -18,13 +23,13 @@
   
   <url>
     <loc>https://ghstahl.github.io/tags/aspnet-core/</loc>
-    <lastmod>2017-01-21T08:51:52-08:00</lastmod>
+    <lastmod>2017-01-23T06:36:12-08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://ghstahl.github.io/categories/aspnet-core/</loc>
-    <lastmod>2017-01-21T08:51:52-08:00</lastmod>
+    <lastmod>2017-01-23T06:36:12-08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -40,14 +45,20 @@
   </url>
   
   <url>
+    <loc>https://ghstahl.github.io/tags/localization/</loc>
+    <lastmod>2017-01-23T06:36:12-08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://ghstahl.github.io/post/</loc>
-    <lastmod>2017-01-21T08:51:52-08:00</lastmod>
+    <lastmod>2017-01-23T06:36:12-08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://ghstahl.github.io/</loc>
-    <lastmod>2017-01-21T08:51:52-08:00</lastmod>
+    <lastmod>2017-01-23T06:36:12-08:00</lastmod>
     <priority>0</priority>
   </url>
   
