@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Aspnet Core on Software Architecture And Development from the Trenches</title>
+    <link>https://ghstahl.github.io/tags/aspnet-core/index.xml</link>
+    <description>Recent content in Aspnet Core on Software Architecture And Development from the Trenches</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <atom:link href="/tags/aspnet-core/index.xml" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>CDN Origin Server Redirector Technique</title>
+      <link>https://ghstahl.github.io/post/cdn-origin-server-redirector-technique/</link>
+      <pubDate>Sat, 21 Jan 2017 08:51:52 -0800</pubDate>
+      
+      <guid>https://ghstahl.github.io/post/cdn-origin-server-redirector-technique/</guid>
+      <description>Pre Reading This is a continuation on the previous post on our simple redirector technique.
+Problem I had the joy of setting up a CDN configuration in Akamai. Though it wasn&amp;rsquo;t that bad, the rarity of that task made me never want to do it twice. I only really needed to CDN cache static assets, and chose to harden the rules for anyone that wanted to use my configuration.</description>
+    </item>
+    
+    <item>
+      <title>Simple Redirector for Asp.Net Core</title>
+      <link>https://ghstahl.github.io/post/simple-redirector-for-aspnet-core/</link>
+      <pubDate>Fri, 20 Jan 2017 08:35:55 -0800</pubDate>
+      
+      <guid>https://ghstahl.github.io/post/simple-redirector-for-aspnet-core/</guid>
+      <description>Introduction This is going to be a really simplistic implementation of a redirect, but it has served me for 99% of my needs. This redirector will be leveraged later in a more complicated CDN implementation. So stay tuned.
+Goal I would like to be able to have redirection happen by a simple key in a route.
+i.e.
+ https://{redirector endpoint}? key={my-key}&amp;amp; remaining={url encoded my-final-route}  would redirect to
+ https://{my-key registered endpoint}/{my-final-route}  Implementation Registration for the redirector looks like the following;</description>
+    </item>
+    
+    <item>
+      <title>Cachebusting Technique for ASP.Net Core</title>
+      <link>https://ghstahl.github.io/post/cachebusting-technique-for-aspnet-core/</link>
+      <pubDate>Sat, 14 Jan 2017 14:09:44 -0800</pubDate>
+      
+      <guid>https://ghstahl.github.io/post/cachebusting-technique-for-aspnet-core/</guid>
+      <description>Goal The goal of this exercise is to create a versioned route, as opposed to adding a query paramater to the end of the route. It isn&amp;rsquo;t simple browser cache busting we are after, but in later posts this technique will be used to feed a CDN.
+The stock asp.net core script tag helper looks like this;
+&amp;lt;script src=&amp;quot;~/lib/jquery/dist/jquery.js&amp;quot;&amp;gt;&amp;lt;/script&amp;gt;  Our asp.net core script tag helper will look like this;</description>
+    </item>
+    
+  </channel>
+</rss>

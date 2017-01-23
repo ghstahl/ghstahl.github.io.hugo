@@ -1,7 +1,7 @@
 +++
 date = "2017-01-20T08:35:55-08:00"
-tags = ["ASP.NET Core"]
-categories = ["ASP.NET Core"]
+tags = ["ASPNET Core"]
+categories = ["ASPNET Core"]
 slug = ""
 title = "Simple Redirector for Asp.Net Core"
 draft = false

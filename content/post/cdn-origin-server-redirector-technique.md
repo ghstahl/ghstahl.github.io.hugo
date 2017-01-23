@@ -2,8 +2,8 @@
 title = "CDN Origin Server Redirector Technique"
 draft = false
 date = "2017-01-21T08:51:52-08:00"
-tags = ["ASP.NET Core","CDN"]
-categories = ["ASP.NET Core"]
+tags = ["ASPNET Core","CDN"]
+categories = ["ASPNET Core"]
 slug = ""
 
 +++
@@ -35,7 +35,7 @@ https://{my origin server endpoint}/{my-everything-else}
 **I would like to be able to edge cache in the following way, but with a throw-away version scheme.**
 
 ```
-https://{mycdn.akamai.com}/cdn-v/{key}/{version}/{my-everything-else}
+https://{mycdn.akamai.com}/cdn-v/{version}/{key}/{my-everything-else}
     would eventually find its way via redirects to   
 https://{my origin server endpoint}/{my-everything-else} 
 ```
