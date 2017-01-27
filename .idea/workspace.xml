@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="087fab63-53db-4758-9cbc-5cba82142fc1" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/content/post/simple-resx-fetcher-aspnet-core.md" afterPath="$PROJECT_DIR$/content/post/simple-resx-fetcher-aspnet-core.md" />
     </list>
     <ignored path="bookshelf.iws" />
@@ -64,8 +63,8 @@
         <entry file="file://$PROJECT_DIR$/content/post/simple-resx-fetcher-aspnet-core.md">
           <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
             <state split_layout="SPLIT">
-              <first_editor relative-caret-position="359">
-                <caret line="138" column="24" lean-forward="true" selection-start-line="138" selection-start-column="24" selection-end-line="138" selection-end-column="24" />
+              <first_editor relative-caret-position="1005">
+                <caret line="325" column="102" lean-forward="false" selection-start-line="325" selection-start-column="102" selection-end-line="325" selection-end-column="102" />
                 <folding />
               </first_editor>
               <second_editor />
@@ -144,8 +143,8 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="449" />
-    <option name="y" value="143" />
+    <option name="x" value="592" />
+    <option name="y" value="501" />
     <option name="width" value="2034" />
     <option name="height" value="1342" />
   </component>
@@ -707,15 +706,15 @@
       <workItem from="1484929995815" duration="9525000" />
       <workItem from="1485180578250" duration="2027000" />
       <workItem from="1485182938982" duration="3977000" />
-      <workItem from="1485523437236" duration="255000" />
+      <workItem from="1485523437236" duration="1862000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="24994000" />
+    <option name="totallyTimeSpent" value="26601000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="449" y="143" width="2034" height="1342" extended-state="0" />
+    <frame x="592" y="501" width="2034" height="1342" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -1110,8 +1109,8 @@
     <entry file="file://$PROJECT_DIR$/content/post/simple-resx-fetcher-aspnet-core.md">
       <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
         <state split_layout="SPLIT">
-          <first_editor relative-caret-position="359">
-            <caret line="138" column="24" lean-forward="true" selection-start-line="138" selection-start-column="24" selection-end-line="138" selection-end-column="24" />
+          <first_editor relative-caret-position="1005">
+            <caret line="325" column="102" lean-forward="false" selection-start-line="325" selection-start-column="102" selection-end-line="325" selection-end-column="102" />
             <folding />
           </first_editor>
           <second_editor />

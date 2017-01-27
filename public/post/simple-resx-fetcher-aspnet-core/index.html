@@ -95,6 +95,7 @@
 
 <pre><code class="language-c#">public interface ILocalizedStringResultTreatment
 {
+    string Key { get; }
     object Process(IEnumerable&lt;LocalizedString&gt; resourceSet);
 }
 </code></pre>
@@ -117,8 +118,10 @@ public class KeyValueArray: ILocalizedStringResultTreatment
                     Key = entry.Name, 
                     Value = entry.Value })
             .ToList();
+
         return result;
     }
+    public string Key =&gt; &quot;kva&quot;;
 }
 
 public class KeyValueObject: ILocalizedStringResultTreatment
@@ -132,7 +135,155 @@ public class KeyValueObject: ILocalizedStringResultTreatment
         }
         return map;
     }
-}  
+    public string Key =&gt; &quot;kvo&quot;;
+}
+
+public class TreatmentMap: ITreatmentMap
+{
+    public TreatmentMap(IEnumerable&lt;ILocalizedStringResultTreatment&gt; treatments)
+    {
+        foreach (var treatment in treatments)
+        {
+            TheMap.Add(treatment.Key,treatment);
+        }
+    }
+    
+    private Dictionary&lt;string, ILocalizedStringResultTreatment&gt; _map;
+
+    private Dictionary&lt;string, ILocalizedStringResultTreatment&gt; TheMap
+    {
+        get 
+        { 
+            return _map ?? (_map 
+                = new Dictionary&lt;string, ILocalizedStringResultTreatment&gt;()); 
+        }  
+    }
+
+    public ILocalizedStringResultTreatment GetTreatment(string key)
+    {
+        ILocalizedStringResultTreatment value = null;
+        if (TheMap.TryGetValue(key, out value))
+            return value;
+        return null;
+    }
+}
+</code></pre>
+
+<h2 id="resource-fetcher">Resource Fetcher</h2>
+
+<pre><code class="language-c#">public static class ResourceApiExtensions
+{
+    public static int GetSequenceHashCode&lt;T&gt;(this IEnumerable&lt;T&gt; sequence)
+    {
+        return sequence
+            .Select(item =&gt; item.GetHashCode())
+            .Aggregate((total, nextCode) =&gt; total ^ nextCode);
+    }
+}
+    
+public class ResourceQueryHandle
+{
+    public string Id { get; set; }
+    public string Treatment { get; set; }
+    public string Culture { get; set; }
+    public ResourceQueryHandle(){}
+
+    public ResourceQueryHandle(ResourceQueryHandle doc)
+    {
+        this.Id = doc.Id;
+        this.Treatment = doc.Treatment;
+        this.Culture = doc.Culture;
+    }
+
+    public override bool Equals(object obj)
+    {
+        var other = obj as ResourceQueryHandle;
+        if (other == null)
+        {
+            return false;
+        }
+        return Id.Equals(other.Id)
+               &amp;&amp; Treatment.Equals(other.Treatment)
+               &amp;&amp; Culture.Equals(other.Culture);
+    }
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
+}
+
+public interface IResourceFetcher
+{
+    object GetResourceSet(ResourceQueryHandle input);
+}
+
+public class ResourceFetcher: IResourceFetcher
+{
+    private IStringLocalizerFactory _localizerFactory;
+    private IMemoryCache _cache;
+    private ITreatmentMap _treatmentMap;
+    public  ResourceFetcher(
+        IStringLocalizerFactory localizerFactory,
+        IMemoryCache cache,
+        ITreatmentMap treatmentMap)
+    {
+        _localizerFactory = localizerFactory;
+        _cache = cache;
+        _treatmentMap = treatmentMap;
+    }
+
+    private object GetResourceSet(string id, string treatment, CultureInfo cultureInfo)
+    {
+        try
+        {
+            var typeId = TypeHelper&lt;Type&gt;.GetTypeByFullName(id);
+            if (typeId != null)
+            {
+                if (string.IsNullOrEmpty(treatment))
+                {
+                    treatment = &quot;kvo&quot;;
+                }
+                var treatmentObject = _treatmentMap.GetTreatment(treatment);
+                if (treatmentObject == null)
+                {
+                    treatment = &quot;kvo&quot;;
+                    treatmentObject = _treatmentMap.GetTreatment(treatment);
+                }
+
+                var localizer = _localizerFactory.Create(typeId);
+
+                var resourceSet = localizer.WithCulture(cultureInfo).GetAllStrings(true);
+                var result = treatmentObject.Process(resourceSet);
+                return result;
+            }
+        }
+        catch (Exception e)
+        {
+            return &quot;&quot;;
+        }
+        return &quot;&quot;;
+    }
+
+    public object GetResourceSet(ResourceQueryHandle input)
+    {
+        CultureInfo currentCulture = new CultureInfo(input.Culture);
+        var key = new List&lt;object&gt; { input.Culture, input.Id, input.Treatment }
+            .AsReadOnly().GetSequenceHashCode();
+        var newValue = new Lazy&lt;object&gt;(() =&gt;
+        {
+            return GetResourceSet(input.Id, input.Treatment, currentCulture);
+        });
+        var value = _cache.GetOrCreate(key.ToString(CultureInfo.InvariantCulture), entry =&gt;
+        {
+            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(100);
+            return newValue;
+        });
+
+        var result = value != null ? value.Value : newValue.Value;
+        return result;
+    }
+}
 </code></pre>
 
 <h2 id="resources-in-asp-net-core">Resources in Asp.Net Core</h2>
@@ -183,36 +334,21 @@ i.e. don&rsquo;t do Main.resx, but do do Main.en-US.resx.  in your startup confi
 
 <p>As I stated earlier, I  am going to abandon REST and go with GraphQL, but for now this is what I got.</p>
 
-<pre><code class="language-c#">public static class ResourceApiExtensions
-{
-    public static int GetSequenceHashCode&lt;T&gt;(this IEnumerable&lt;T&gt; sequence)
-    {
-        return sequence
-            .Select(item =&gt; item.GetHashCode())
-            .Aggregate((total, nextCode) =&gt; total ^ nextCode);
-    }
-}
-
-[Route(&quot;ResourceApi/[controller]&quot;)]
+<pre><code class="language-c#">[Route(&quot;ResourceApi/[controller]&quot;)]
 public class ResourceController : Controller
 {
-    private ILogger Logger { get; set; }
     private readonly IHttpContextAccessor _httpContextAccessor;
     private ISession Session =&gt; _httpContextAccessor.HttpContext.Session;
-    private IStringLocalizerFactory _localizerFactory;
-    private IRequestCultureProvider _requestCultureProvider;
-    private readonly IStringLocalizer&lt;ResourceController&gt; _localizer;
-    private IMemoryCache _cache;
+    private IResourceFetcher _resourceFetcher;
+    private ILogger Logger { get; set; }
 
-
-    public ResourceController(IHttpContextAccessor httpContextAccessor,
-        IMemoryCache memoryCache,
-        IStringLocalizerFactory localizerFactory,
+    public ResourceController(
+        IHttpContextAccessor httpContextAccessor,
+        IResourceFetcher resourceFetcher,
         ILogger&lt;ResourceController&gt; logger)
     {
         _httpContextAccessor = httpContextAccessor;
-        _cache = memoryCache;
-        _localizerFactory = localizerFactory;
+        _resourceFetcher = resourceFetcher;
         Logger = logger;
     }
 
@@ -240,58 +376,14 @@ public class ResourceController : Controller
             }
             currentCulture = hCultureInfo;
         }
-        var key = new List&lt;object&gt; { currentCulture, id, treatment }
-            .AsReadOnly()
-            .GetSequenceHashCode();
-        var newValue = new Lazy&lt;object&gt;(() =&gt; 
-            { 
-                return InternalGetResourceSet(id, treatment, currentCulture); 
-            });
-
-
-        var value = _cache.GetOrCreate(
-            key.ToString(CultureInfo.InvariantCulture), 
-            entry =&gt;
-            {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(100);
-                return newValue;
-            });
-
-        var result = value != null ? value.Value : newValue.Value;
-        return Ok(result);
-    }
-
-
-    private object InternalGetResourceSet(  string id, 
-                                            string treatment, 
-                                            CultureInfo cultureInfo)
-    {
-        try
+        var obj = _resourceFetcher.GetResourceSet(new ResourceQueryHandle()
         {
-            var typeId = TypeHelper&lt;Type&gt;.GetTypeByFullName(id);
-            if (typeId != null)
-            {
-                if (string.IsNullOrEmpty(treatment))
-                {
-                     treatment = &quot;P7.Core.Localization.Treatment.KeyValueObject,P7.Core&quot;;
-                }
-                var typeTreatment = TypeHelper&lt;Type&gt;
-                                        .GetTypeByFullName(treatment);
-                var localizer = _localizerFactory.Create(typeId);
+            Culture = currentCulture.Name,
+            Id = id,
+            Treatment = treatment
+        });
 
-                var resourceSet = localizer.WithCulture(cultureInfo)
-                                    .GetAllStrings(true);
-                var instance = Activator.CreateInstance(typeTreatment) 
-                                    as ILocalizedStringResultTreatment;
-                var result = instance.Process(resourceSet);
-                return result;
-            }
-        }
-        catch (Exception e)
-        {
-            return &quot;&quot;;
-        }
-        return &quot;&quot;;
+        return Ok(obj);
     }
 }
 
@@ -304,12 +396,12 @@ public class ResourceController : Controller
 <ol>
 <li><p>id = UrlEncoded(Fully qualifed class name of the resouce)</p></li>
 
-<li><p>treatment=UrlEncoded(Fully qualifed class name of the treatment implementation)</p></li>
+<li><p>treatment=[key to treatment]</p></li>
 </ol>
 
 <p>You will notice that I pass in as the &ldquo;id&rdquo; my &ldquo;Main&rdquo; model.</p>
 
-<pre><code class="language-html">http://localhost:7791/ResourceApi/Resource/ByDynamic?id=p7.main.Resources.Main%2Cp7.main&amp;treatment=P7.Core.Localization.Treatment.KeyValueArray%2CP7.Core
+<pre><code class="language-html">http://localhost:7791/ResourceApi/Resource/ByDynamic?id=p7.main.Resources.Main%2Cp7.main&amp;treatment=kva
 </code></pre>
 
   </div>
