@@ -18,12 +18,16 @@ For this project I would need to have a core way to read the data from Resx, and
 ## Data Treatment  
 This is stock and trade interfaces and class implementations.  The treatments will evaluate a list of LocalizedString, and build a custom response.
 
-**The Interface**
+**The Interfaces**
 ```c#
 public interface ILocalizedStringResultTreatment
 {
     string Key { get; }
     object Process(IEnumerable<LocalizedString> resourceSet);
+}
+public interface ITreatmentMap
+{
+    ILocalizedStringResultTreatment GetTreatment(string key);
 }
 ```  
 **Some Implementations**
@@ -95,17 +99,8 @@ public class TreatmentMap: ITreatmentMap
 }
 ```
 ## Resource Fetcher
+**Models**
 ```c#
-public static class ResourceApiExtensions
-{
-    public static int GetSequenceHashCode<T>(this IEnumerable<T> sequence)
-    {
-        return sequence
-            .Select(item => item.GetHashCode())
-            .Aggregate((total, nextCode) => total ^ nextCode);
-    }
-}
-    
 public class ResourceQueryHandle
 {
     public string Id { get; set; }
@@ -137,10 +132,27 @@ public class ResourceQueryHandle
         return Id.GetHashCode();
     }
 }
+```  
 
+
+**Interfaces**
+```c#
 public interface IResourceFetcher
 {
     object GetResourceSet(ResourceQueryHandle input);
+}
+```  
+
+**Implementation**
+```c#
+public static class ResourceApiExtensions
+{
+    public static int GetSequenceHashCode<T>(this IEnumerable<T> sequence)
+    {
+        return sequence
+            .Select(item => item.GetHashCode())
+            .Aggregate((total, nextCode) => total ^ nextCode);
+    }
 }
 
 public class ResourceFetcher: IResourceFetcher

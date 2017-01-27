@@ -91,12 +91,16 @@
 
 <p>This is stock and trade interfaces and class implementations.  The treatments will evaluate a list of LocalizedString, and build a custom response.</p>
 
-<p><strong>The Interface</strong></p>
+<p><strong>The Interfaces</strong></p>
 
 <pre><code class="language-c#">public interface ILocalizedStringResultTreatment
 {
     string Key { get; }
     object Process(IEnumerable&lt;LocalizedString&gt; resourceSet);
+}
+public interface ITreatmentMap
+{
+    ILocalizedStringResultTreatment GetTreatment(string key);
 }
 </code></pre>
 
@@ -171,17 +175,9 @@ public class TreatmentMap: ITreatmentMap
 
 <h2 id="resource-fetcher">Resource Fetcher</h2>
 
-<pre><code class="language-c#">public static class ResourceApiExtensions
-{
-    public static int GetSequenceHashCode&lt;T&gt;(this IEnumerable&lt;T&gt; sequence)
-    {
-        return sequence
-            .Select(item =&gt; item.GetHashCode())
-            .Aggregate((total, nextCode) =&gt; total ^ nextCode);
-    }
-}
-    
-public class ResourceQueryHandle
+<p><strong>Models</strong></p>
+
+<pre><code class="language-c#">public class ResourceQueryHandle
 {
     public string Id { get; set; }
     public string Treatment { get; set; }
@@ -212,10 +208,26 @@ public class ResourceQueryHandle
         return Id.GetHashCode();
     }
 }
+</code></pre>
 
-public interface IResourceFetcher
+<p><strong>Interfaces</strong></p>
+
+<pre><code class="language-c#">public interface IResourceFetcher
 {
     object GetResourceSet(ResourceQueryHandle input);
+}
+</code></pre>
+
+<p><strong>Implementation</strong></p>
+
+<pre><code class="language-c#">public static class ResourceApiExtensions
+{
+    public static int GetSequenceHashCode&lt;T&gt;(this IEnumerable&lt;T&gt; sequence)
+    {
+        return sequence
+            .Select(item =&gt; item.GetHashCode())
+            .Aggregate((total, nextCode) =&gt; total ^ nextCode);
+    }
 }
 
 public class ResourceFetcher: IResourceFetcher
