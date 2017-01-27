@@ -125,13 +125,12 @@ public class KeyValueObject: ILocalizedStringResultTreatment
 {
     public object Process(IEnumerable&lt;LocalizedString&gt; resourceSet)
     {
-        var expando = new System.Dynamic.ExpandoObject();
-        var expandoMap = expando as IDictionary&lt;string, object&gt;;
+        var map = new Dictionary&lt;string,string&gt;();
         foreach (var rs in resourceSet)
         {
-            expandoMap[rs.Name] = rs.Value;
+            map[rs.Name] = rs.Value;
         }
-        return expando;
+        return map;
     }
 }  
 </code></pre>

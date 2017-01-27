@@ -51,13 +51,12 @@ public class KeyValueObject: ILocalizedStringResultTreatment
 {
     public object Process(IEnumerable<LocalizedString> resourceSet)
     {
-        var expando = new System.Dynamic.ExpandoObject();
-        var expandoMap = expando as IDictionary<string, object>;
+        var map = new Dictionary<string,string>();
         foreach (var rs in resourceSet)
         {
-            expandoMap[rs.Name] = rs.Value;
+            map[rs.Name] = rs.Value;
         }
-        return expando;
+        return map;
     }
 }  
 ```
